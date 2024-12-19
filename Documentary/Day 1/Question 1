@@ -1,1 +1,16 @@
+#include<iostream>
+using namespace std;
 
+int main(){
+    int sum = 0;
+    int n = 0;
+
+    cout << "Enter Natural number: ";
+    cin >> n;
+
+    for(int i = 1; i <= n; i++){  // Start from 1 instead of 0
+        sum = sum + i;
+    }
+
+    cout << "Sum of Natural numbers is: " << sum;
+}
