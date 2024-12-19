@@ -1,1 +1,61 @@
+#include <iostream>
+#include <string>
 
+using namespace std;
+
+struct Biodata {
+    string name;
+    string uid;
+    string section;
+    int age;
+    float lastYearCGPA;
+    string hometown;
+    string dob;
+    string areaOfInterest;
+};
+
+void collectBiodata(Biodata &data) {
+    cout << "Enter your name: ";
+    getline(cin, data.name);
+    
+    cout << "Enter your UID: ";
+    getline(cin, data.uid);
+    
+    cout << "Enter your section: ";
+    getline(cin, data.section);
+    
+    cout << "Enter your age: ";
+    cin >> data.age;
+    
+    cout << "Enter your last year CGPA: ";
+    cin >> data.lastYearCGPA;
+    cin.ignore(); // To ignore the newline character left in the input buffer
+    
+    cout << "Enter your hometown: ";
+    getline(cin, data.hometown);
+    
+    cout << "Enter your date of birth (DD/MM/YYYY): ";
+    getline(cin, data.dob);
+    
+    cout << "Enter your area of interest: ";
+    getline(cin, data.areaOfInterest);
+}
+
+void displayBiodata(const Biodata &data) {
+    cout << "\n--- Biodata ---" << endl;
+    cout << "Name: " << data.name << endl;
+    cout << "UID: " << data.uid << endl;
+    cout << "Section: " << data.section << endl;
+    cout << "Age: " << data.age << endl;
+    cout << "Last Year CGPA: " << data.lastYearCGPA << endl;
+    cout << "Hometown: " << data.hometown << endl;
+    cout << "Date of Birth: " << data.dob << endl;
+    cout << "Area of Interest: " << data.areaOfInterest << endl;
+}
+
+int main() {
+    Biodata user;
+    collectBiodata(user);
+    displayBiodata(user);
+    return 0;
+}
