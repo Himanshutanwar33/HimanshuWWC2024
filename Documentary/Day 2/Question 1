@@ -1,1 +1,59 @@
+#include <iostream>
+#include <vector>
 
+using namespace std;
+
+// Definition for a binary tree node.
+struct TreeNode {
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x) : val(x), left(NULL), right(NULL) {}
+};
+
+class Solution {
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) {
+        return convertToBST(nums, 0, nums.size() - 1);
+    }
+    
+private:
+    TreeNode* convertToBST(const vector<int>& nums, int left, int right) {
+        if (left > right) {
+            return nullptr; // Base case: no more elements to process
+        }
+
+        // Find the middle index
+        int mid = left + (right - left) / 2;
+
+        // Create a new tree node with the middle element
+        TreeNode* root = new TreeNode(nums[mid]);
+
+        // Recursively build the left and right subtrees
+        root->left = convertToBST(nums, left, mid - 1);
+        root->right = convertToBST(nums, mid + 1, right);
+
+        return root;
+    }
+};
+
+// Helper function to print the tree (In-order traversal)
+void inorder(TreeNode* root) {
+    if (root == nullptr) return;
+    inorder(root->left);
+    cout << root->val << " ";
+    inorder(root->right);
+}
+
+int main() {
+    Solution solution;
+    vector<int> nums = {-10, -3, 0, 5, 9};
+    
+    TreeNode* root = solution.sortedArrayToBST(nums);
+    
+    // Print the inorder traversal of the BST
+    inorder(root);
+    cout << endl;
+    
+    return 0;
+}
