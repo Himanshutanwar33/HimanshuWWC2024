@@ -1,0 +1,197 @@
+#include <iostream>
+#include <string>
+#include <memory>
+
+// Passenger Class
+class Passenger {
+public:
+    std::string name;
+    int seatNumber;
+    
+    Passenger(std::string n, int seat) : name(n), seatNumber(seat) {}
+};
+
+// Compartment Class
+class Compartment {
+public:
+    int compartmentID;
+    int totalSeats;
+    int availableSeats;
+    std::shared_ptr<Passenger> bookedSeats[100];  // Maximum 100 seats per compartment
+    
+    Compartment(int id, int total) : compartmentID(id), totalSeats(total), availableSeats(total) {}
+
+    bool checkAvailability() {
+        return availableSeats > 0;
+    }
+
+    bool bookSeat(std::shared_ptr<Passenger> passenger) {
+        if (availableSeats > 0) {
+            for (int i = 0; i < totalSeats; i++) {
+                if (bookedSeats[i] == nullptr) {
+                    bookedSeats[i] = passenger;
+                    availableSeats--;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    bool cancelSeat(int seatNumber) {
+        if (seatNumber >= 0 && seatNumber < totalSeats && bookedSeats[seatNumber] != nullptr) {
+            bookedSeats[seatNumber] = nullptr;
+            availableSeats++;
+            return true;
+        }
+        return false;
+    }
+
+    void displayCompartmentStatus() {
+        std::cout << "Compartment " << compartmentID << ": Total Seats = " << totalSeats 
+                  << ", Available Seats = " << availableSeats << std::endl;
+    }
+};
+
+// Train Class
+class Train {
+public:
+    int trainID;
+    std::string trainName;
+    Train* next;  // Linked list pointer to the next train
+    std::shared_ptr<Compartment> compartments[5];  // Maximum 5 compartments per train
+
+    Train(int id, std::string name) : trainID(id), trainName(name), next(nullptr) {}
+
+    void addCompartment(int compartmentID, int totalSeats) {
+        for (int i = 0; i < 5; i++) {
+            if (compartments[i] == nullptr) {
+                compartments[i] = std::make_shared<Compartment>(compartmentID, totalSeats);
+                break;
+            }
+        }
+    }
+
+    bool bookSeat(int compartmentID, std::shared_ptr<Passenger> passenger) {
+        for (int i = 0; i < 5; i++) {
+            if (compartments[i] != nullptr && compartments[i]->compartmentID == compartmentID) {
+                return compartments[i]->bookSeat(passenger);
+            }
+        }
+        return false;
+    }
+
+    bool cancelSeat(int compartmentID, int seatNumber) {
+        for (int i = 0; i < 5; i++) {
+            if (compartments[i] != nullptr && compartments[i]->compartmentID == compartmentID) {
+                return compartments[i]->cancelSeat(seatNumber);
+            }
+        }
+        return false;
+    }
+
+    void displayTrainStatus() {
+        std::cout << "Train ID: " << trainID << ", Train Name: " << trainName << std::endl;
+        for (int i = 0; i < 5; i++) {
+            if (compartments[i] != nullptr) {
+                compartments[i]->displayCompartmentStatus();
+            }
+        }
+    }
+};
+
+// TrainReservationSystem Class
+class TrainReservationSystem {
+public:
+    Train* head;  // Head of the linked list representing all trains
+
+    TrainReservationSystem() : head(nullptr) {}
+
+    // Add a new train to the system
+    void addTrain(int id, std::string name) {
+        Train* newTrain = new Train(id, name);
+        newTrain->next = head;
+        head = newTrain;
+    }
+
+    Train* findTrain(int trainID) {
+        Train* current = head;
+        while (current != nullptr) {
+            if (current->trainID == trainID) {
+                return current;
+            }
+            current = current->next;
+        }
+        return nullptr;
+    }
+
+    void bookSeat(int trainID, int compartmentID, std::shared_ptr<Passenger> passenger) {
+        Train* train = findTrain(trainID);
+        if (train) {
+            if (train->bookSeat(compartmentID, passenger)) {
+                std::cout << "Seat booked successfully for " << passenger->name << " in Train " 
+                          << train->trainName << ", Compartment " << compartmentID << std::endl;
+            } else {
+                std::cout << "Failed to book seat. Compartment " << compartmentID << " may be full." << std::endl;
+            }
+        } else {
+            std::cout << "Train not found!" << std::endl;
+        }
+    }
+
+    void cancelSeat(int trainID, int compartmentID, int seatNumber) {
+        Train* train = findTrain(trainID);
+        if (train) {
+            if (train->cancelSeat(compartmentID, seatNumber)) {
+                std::cout << "Seat " << seatNumber << " canceled successfully in Train " 
+                          << train->trainName << ", Compartment " << compartmentID << std::endl;
+            } else {
+                std::cout << "Failed to cancel seat " << seatNumber << ". Seat may not exist." << std::endl;
+            }
+        } else {
+            std::cout << "Train not found!" << std::endl;
+        }
+    }
+
+    void checkAvailability(int trainID) {
+        Train* train = findTrain(trainID);
+        if (train) {
+            train->displayTrainStatus();
+        } else {
+            std::cout << "Train not found!" << std::endl;
+        }
+    }
+};
+
+int main() {
+    TrainReservationSystem system;
+
+    // Adding trains to the system
+    system.addTrain(1, "Express 101");
+    system.addTrain(2, "SuperFast 202");
+
+    // Adding compartments to trains
+    Train* train1 = system.findTrain(1);
+    train1->addCompartment(101, 50);  // Compartment 101 with 50 seats
+    train1->addCompartment(102, 60);  // Compartment 102 with 60 seats
+
+    Train* train2 = system.findTrain(2);
+    train2->addCompartment(201, 40);  // Compartment 201 with 40 seats
+    train2->addCompartment(202, 50);  // Compartment 202 with 50 seats
+
+    // Booking seats
+    system.bookSeat(1, 101, std::make_shared<Passenger>("Alice", 1));
+    system.bookSeat(1, 101, std::make_shared<Passenger>("Bob", 2));
+    system.bookSeat(2, 202, std::make_shared<Passenger>("Charlie", 1));
+
+    // Checking availability
+    system.checkAvailability(1);
+
+    // Cancelling a seat
+    system.cancelSeat(1, 101, 1);
+
+    // Checking availability again
+    system.checkAvailability(1);
+
+    return 0;
+}
