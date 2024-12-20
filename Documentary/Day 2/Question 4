@@ -1,0 +1,136 @@
+#include <iostream>
+#include <memory>
+#include <chrono>
+#include <thread>
+#include <atomic>
+
+// Task Node structure representing each task
+struct Task {
+    int taskID;
+    int priority;
+    int executionTime;  // Estimated execution time (in milliseconds)
+    std::chrono::steady_clock::time_point startTime;
+    Task* next;  // Pointer to the next task in the list
+    
+    Task(int id, int p, int execTime)
+        : taskID(id), priority(p), executionTime(execTime), next(nullptr) {}
+};
+
+// TaskScheduler class managing the task list and operations
+class TaskScheduler {
+public:
+    TaskScheduler() : head(nullptr) {}
+
+    // Insert a task in priority order (higher priority comes first)
+    void insertTask(int taskID, int priority, int executionTime) {
+        Task* newTask = new Task(taskID, priority, executionTime);
+        if (!head || head->priority < priority) {
+            newTask->next = head;
+            head = newTask;
+        } else {
+            Task* current = head;
+            while (current->next && current->next->priority >= priority) {
+                current = current->next;
+            }
+            newTask->next = current->next;
+            current->next = newTask;
+        }
+    }
+
+    // Remove a task from the list after completion
+    void removeTask(int taskID) {
+        if (!head) {
+            std::cerr << "Error: Task list is empty!\n";
+            return;
+        }
+        
+        if (head->taskID == taskID) {
+            Task* temp = head;
+            head = head->next;
+            delete temp;
+            return;
+        }
+
+        Task* current = head;
+        while (current->next && current->next->taskID != taskID) {
+            current = current->next;
+        }
+
+        if (current->next) {
+            Task* temp = current->next;
+            current->next = current->next->next;
+            delete temp;
+        } else {
+            std::cerr << "Error: Task with ID " << taskID << " not found!\n";
+        }
+    }
+
+    // Print the current state of the task list
+    void printTaskList() {
+        if (!head) {
+            std::cout << "No tasks in the scheduler.\n";
+            return;
+        }
+
+        Task* current = head;
+        while (current) {
+            std::cout << "Task ID: " << current->taskID
+                      << ", Priority: " << current->priority
+                      << ", Execution Time: " << current->executionTime << "ms\n";
+            current = current->next;
+        }
+        std::cout << "\n";
+    }
+
+    // Simulate task execution, handling preemption and periodic tasks
+    void executeTasks() {
+        if (!head) {
+            std::cerr << "Error: No tasks to execute.\n";
+            return;
+        }
+
+        Task* current = head;
+        while (current) {
+            std::cout << "Executing Task ID: " << current->taskID
+                      << " with Priority: " << current->priority
+                      << "\n";
+
+            // Simulate task execution by sleeping for the task's execution time
+            std::this_thread::sleep_for(std::chrono::milliseconds(current->executionTime));
+
+            // Task completed, remove it from the list
+            Task* completedTask = current;
+            current = current->next;
+            removeTask(completedTask->taskID);
+
+            // After completion, we could insert periodic tasks back here
+            // For simplicity, we assume a periodic task with a fixed interval
+            if (completedTask->executionTime < 1000) {
+                insertTask(completedTask->taskID, completedTask->priority, completedTask->executionTime + 500);
+            }
+
+            delete completedTask;
+        }
+    }
+
+private:
+    Task* head;  // Pointer to the head of the linked list
+};
+
+// Main function to test the Task Scheduler
+int main() {
+    TaskScheduler scheduler;
+
+    // Insert tasks with varying priorities
+    scheduler.insertTask(1, 3, 500);  // Task ID 1, Priority 3, Execution Time 500ms
+    scheduler.insertTask(2, 5, 300);  // Task ID 2, Priority 5, Execution Time 300ms
+    scheduler.insertTask(3, 2, 400);  // Task ID 3, Priority 2, Execution Time 400ms
+
+    std::cout << "Initial Task List:\n";
+    scheduler.printTaskList();
+
+    // Execute tasks (this will simulate real-time execution)
+    scheduler.executeTasks();
+
+    return 0;
+}
