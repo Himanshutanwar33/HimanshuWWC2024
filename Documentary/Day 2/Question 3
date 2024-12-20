@@ -1,0 +1,52 @@
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+public:
+    int removeDuplicates(vector<int>& nums) {
+        if (nums.empty()) {
+            return 0; // If the array is empty, there are no unique elements
+        }
+        
+        int k = 1; // Initialize the index for the next unique element
+        
+        // Start from the second element and iterate through the array
+        for (int i = 1; i < nums.size(); ++i) {
+            // If the current element is different from the previous one
+            if (nums[i] != nums[i - 1]) {
+                nums[k] = nums[i]; // Place the current element at the correct position
+                ++k; // Increment the index for the next unique element
+            }
+        }
+        
+        return k; // Return the number of unique elements
+    }
+};
+
+// Helper function to print the array
+void printArray(const vector<int>& nums) {
+    for (int num : nums) {
+        cout << num << " ";
+    }
+    cout << endl;
+}
+
+int main() {
+    Solution solution;
+    
+    // Example input
+    vector<int> nums = {1, 1, 2, 2, 3, 4, 4, 5};
+    
+    // Call the function to remove duplicates
+    int uniqueCount = solution.removeDuplicates(nums);
+    
+    // Print the modified array with unique elements
+    printArray(nums);
+    
+    // Output the number of unique elements
+    cout << "Number of unique elements: " << uniqueCount << endl;
+    
+    return 0;
+}
