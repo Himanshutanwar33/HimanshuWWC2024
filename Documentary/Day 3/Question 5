@@ -1,0 +1,30 @@
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+class Solution {
+public:
+    int minNonZeroProduct(int p) {
+        const int MOD = 1e9 + 7;
+
+        // Compute 2^p - 1
+        long long maxValue = (1LL << p) - 1;  // This is 2^p - 1
+        
+        // Calculate the result as maxValue * (maxValue - 1) % MOD
+        long long result = maxValue * (maxValue - 1) % MOD;
+        
+        return result;
+    }
+};
+
+int main() {
+    Solution solution;
+    
+    // Test case
+    int p = 3;  // Example input
+    int result = solution.minNonZeroProduct(p);
+    
+    cout << "The minimum non-zero product is: " << result << endl;
+
+    return 0;
+}
