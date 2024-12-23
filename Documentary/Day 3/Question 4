@@ -1,0 +1,29 @@
+#include <iostream>
+using namespace std;
+
+class Solution {
+public:
+    int findTheWinner(int n, int k) {
+        int winner = 0; // Base case: when there's only one person, they are the winner (0-indexed)
+        
+        // Iteratively compute the winner's position for circles of increasing size
+        for (int i = 2; i <= n; ++i) {
+            winner = (winner + k) % i;
+        }
+        
+        // Convert the result to 1-indexed by adding 1
+        return winner + 1;
+    }
+};
+
+int main() {
+    Solution solution;
+    
+    // Test case
+    int n = 5, k = 2;  // Example input
+    int winner = solution.findTheWinner(n, k);
+    
+    cout << "The winner is: " << winner << endl;
+
+    return 0;
+}
