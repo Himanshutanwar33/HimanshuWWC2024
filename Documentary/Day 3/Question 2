@@ -1,0 +1,29 @@
+#include <iostream>
+using namespace std;
+
+class Solution {
+public:
+    int lastRemaining(int n) {
+        int left = 1, step = 1;
+        int remaining = n;
+        bool isLeft = true;
+
+        while (remaining > 1) {
+            if (isLeft || remaining % 2 == 1) {
+                left += step;
+            }
+            step *= 2;
+            remaining /= 2;
+            isLeft = !isLeft;
+        }
+
+        return left;
+    }
+};
+
+int main() {
+    Solution solution;
+    int n = 9; // Example input
+    cout << "Last remaining number: " << solution.lastRemaining(n) << endl;
+    return 0;
+}
