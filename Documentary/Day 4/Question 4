@@ -1,0 +1,109 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <chrono>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+
+using namespace std;
+using namespace chrono;
+
+enum class TriagePriority {
+    Critical,
+    Urgent,
+    Moderate,
+    Minor
+};
+
+struct Patient {
+    string name;
+    TriagePriority priority;
+    int severity_level; // 1-10 (higher is more severe)
+    time_point<system_clock> arrival_time;
+};
+
+// Custom comparator for priority queue
+struct ComparePatients {
+    bool operator()(const Patient& lhs, const Patient& rhs) const {
+        // Priority based on triage level
+        if (lhs.priority != rhs.priority) {
+            return static_cast<int>(lhs.priority) > static_cast<int>(rhs.priority); 
+        }
+
+        // If triage levels are the same, prioritize by severity
+        if (lhs.severity_level != rhs.severity_level) {
+            return lhs.severity_level < rhs.severity_level; 
+        }
+
+        // If severity levels are also the same, prioritize by arrival time
+        return lhs.arrival_time > rhs.arrival_time; 
+    }
+};
+
+// Thread-safe priority queue
+class ThreadSafePriorityQueue {
+private:
+    priority_queue<Patient, vector<Patient>, ComparePatients> queue;
+    mutex mtx;
+    condition_variable cv;
+
+public:
+    void push(const Patient& patient) {
+        unique_lock<mutex> lock(mtx);
+        queue.push(patient);
+        cv.notify_one(); // Notify any waiting threads
+    }
+
+    Patient pop() {
+        unique_lock<mutex> lock(mtx);
+        cv.wait(lock, [this]{ return !queue.empty(); }); // Wait until queue is not empty
+        Patient patient = queue.top();
+        queue.pop();
+        return patient;
+    }
+
+    bool empty() {
+        lock_guard<mutex> lock(mtx);
+        return queue.empty();
+    }
+};
+
+int main() {
+    ThreadSafePriorityQueue patientQueue;
+
+    // Simulate incoming patients (replace with actual data)
+    thread patientGenerator([&patientQueue]() {
+        while (true) { 
+            // Simulate new patient arrival
+            this_thread::sleep_for(seconds(5)); 
+
+            Patient newPatient = {
+                "Patient " + to_string(rand() % 100),
+                static_cast<TriagePriority>(rand() % 4), 
+                rand() % 10 + 1,
+                system_clock::now()
+            };
+
+            cout << "New Patient: " << newPatient.name << " - Priority: " << static_cast<int>(newPatient.priority) 
+                 << " - Severity: " << newPatient.severity_level << endl;
+
+            patientQueue.push(newPatient); 
+        }
+    });
+
+    // Process patients (simulate medical staff)
+    thread patientProcessor([&patientQueue]() {
+        while (true) {
+            Patient patient = patientQueue.pop(); 
+            cout << "Treating: " << patient.name << endl;
+            // Simulate treatment time
+            this_thread::sleep_for(seconds(rand() % 10 + 1)); 
+        }
+    });
+
+    patientGenerator.join();
+    patientProcessor.join();
+
+    return 0;
+}
