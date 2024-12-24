@@ -1,0 +1,20 @@
+#include <iostream>
+#include <vector>
+#include <map>
+#include <set>
+#include <queue>
+#include <algorithm>
+
+using namespace std;
+
+struct Trade {
+    long long timestamp;
+    string stock_symbol;
+    double price;
+    int volume;
+};
+
+// Comparator for sorting by timestamp
+bool compareByTimestamp(const Trade& lhs, const Trade& rhs) {
+    return lhs.timestamp < rhs.timestamp;
+}
