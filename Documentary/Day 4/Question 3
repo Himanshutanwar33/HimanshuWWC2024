@@ -1,0 +1,77 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
+
+using namespace std;
+
+struct Item {
+    string title;
+    double total_views;
+    double average_rating; 
+    int release_year;
+};
+
+// Custom comparator for trending content (popularity + recency)
+bool compareByTrending(const Item& lhs, const Item& rhs) {
+    // Combine factors (adjust weights as needed)
+    double lhs_score = lhs.total_views * 0.8 + (2024 - lhs.release_year) * 0.2;
+    double rhs_score = rhs.total_views * 0.8 + (2024 - rhs.release_year) * 0.2;
+    return lhs_score > rhs_score;
+}
+
+// Function to calculate similarity score between items (example using simple average rating)
+double calculateSimilarity(const Item& item1, const Item& item2) {
+    return (item1.average_rating + item2.average_rating) / 2.0;
+}
+
+int main() {
+    // Sample catalog data (replace with actual data)
+    vector<Item> catalog = {
+        {"The Shawshank Redemption", 100000, 4.8, 1994},
+        {"The Godfather", 80000, 4.9, 1972},
+        {"The Dark Knight", 90000, 4.7, 2008},
+        {"Pulp Fiction", 70000, 4.6, 1994},
+        {"Inception", 60000, 4.8, 2010}
+    };
+
+    // Sort catalog for trending content (general recommendations)
+    sort(catalog.begin(), catalog.end(), compareByTrending);
+
+    cout << "Trending Content:" << endl;
+    for (const Item& item : catalog) {
+        cout << "- " << item.title << endl;
+    }
+    cout << endl;
+
+    // Simulate user viewing history (replace with actual user data)
+    unordered_map<string, vector<string>> user_history = {
+        {"user1", {"The Godfather", "Pulp Fiction"}}
+    };
+
+    // Personalized recommendations for user1
+    string user = "user1";
+    vector<Item> recommendations;
+    for (const Item& item : catalog) {
+        double similarity_score = 0.0;
+        for (const string& viewed_item : user_history[user]) {
+            auto it = find_if(catalog.begin(), catalog.end(), [&viewed_item](const Item& i) { return i.title == viewed_item; });
+            if (it != catalog.end()) { // Check if item was found
+                similarity_score += calculateSimilarity(item, *it); 
+            }
+        }
+        recommendations.push_back({item.title, similarity_score, 0, 0}); // Placeholder for ratings and release year
+    }
+
+    // Sort recommendations by similarity score (higher score = more relevant)
+    sort(recommendations.begin(), recommendations.end(), [](const Item& lhs, const Item& rhs) {
+        return lhs.average_rating > rhs.average_rating; // Replace with actual similarity score calculation
+    });
+
+    cout << "Personalized Recommendations for " << user << ":" << endl;
+    for (const Item& item : recommendations) {
+        cout << "- " << item.title << endl;
+    }
+
+    return 0;
+}
