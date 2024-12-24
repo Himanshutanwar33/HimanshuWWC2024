@@ -1,0 +1,62 @@
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+
+struct Ad {
+    std::string advertiserName;
+    double bidAmount;      // The amount the advertiser is willing to pay
+    double engagementRate; // The expected engagement rate of the ad
+    double remainingBudget; // The remaining budget for the ad campaign
+
+    // Constructor
+    Ad(std::string name, double bid, double engagement, double budget)
+        : advertiserName(name), bidAmount(bid), engagementRate(engagement), remainingBudget(budget) {}
+
+    // Calculate effective score for prioritization
+    double effectiveScore() const {
+        return (bidAmount * engagementRate) / remainingBudget; // Example scoring formula
+    }
+};
+
+// Comparator for the priority queue
+struct AdComparator {
+    bool operator()(const Ad& a, const Ad& b) {
+        return a.effectiveScore() < b.effectiveScore(); // Max-heap based on effective score
+    }
+};
+
+class AdScheduler {
+public:
+    void addAd(const Ad& ad) {
+        adQueue.push(ad);
+    }
+
+    void scheduleAds(int numberOfAds) {
+        std::cout << "Scheduling Ads:\n";
+        for (int i = 0; i < numberOfAds && !adQueue.empty(); ++i) {
+            Ad ad = adQueue.top();
+            adQueue.pop();
+            std::cout << "Ad by " << ad.advertiserName 
+                      << " with effective score: " << ad.effectiveScore() << "\n";
+        }
+    }
+
+private:
+    std::priority_queue<Ad, std::vector<Ad>, AdComparator> adQueue;
+};
+
+int main() {
+    AdScheduler scheduler;
+
+    // Sample ads
+    scheduler.addAd(Ad("Advertiser A", 100.0, 0.8, 500.0));
+    scheduler.addAd(Ad("Advertiser B", 150.0, 0.6, 300.0));
+    scheduler.addAd(Ad("Advertiser C", 200.0, 0.9, 700.0));
+    scheduler.addAd(Ad("Advertiser D", 120.0, 0.7, 400.0));
+
+    // Schedule top 3 ads
+    scheduler.scheduleAds(3);
+
+    return 0;
+}
